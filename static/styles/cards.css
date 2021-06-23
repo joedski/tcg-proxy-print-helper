@@ -1,0 +1,24 @@
+/* Some generic styles */
+
+.tcg-card-set {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.tcg-card-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.tcg-card {
+  /* taking off 5 thou on each seems to make them fit in the sleeves better.
+    also 1px for the border. */
+  width: 2.455in;
+  height: 3.455in;
+
+  position: relative;
+}

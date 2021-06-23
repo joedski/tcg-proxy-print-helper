@@ -1,0 +1,58 @@
+/* Search Form */
+
+.tcg-proxy__form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+  overflow: hidden;
+
+  background-color: rgba(255, 255, 255, 0.9);
+
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tcg-proxy__form:hover {
+  opacity: 1;
+}
+
+@media print {
+  .tcg-proxy__form {
+    display: none;
+  }
+}
+
+/* The Card! */
+
+.tcg-proxy__card {
+  width: 100%;
+  height: 100%;
+
+  background-position: center;
+  background-size: cover;
+
+  position: relative;
+}
+
+.tcg-proxy__card::before,
+.tcg-proxy__card::after {
+  content: " ";
+  display: block;
+  position: absolute;
+
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.tcg-proxy__card::before {
+  border: 0.05in white dashed;
+}
+
+.tcg-proxy__card::after {
+  border: 0.01in black dashed;
+}

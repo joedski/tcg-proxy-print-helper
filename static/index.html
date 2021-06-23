@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTG Proxy Helper</title>
+
+    <link rel="stylesheet" href="styles/cards.css" />
+    <link rel="stylesheet" href="styles/proxy-helper.css" />
+    <link
+      rel="mtg:cardlist"
+      href="data/scryfall-default-cards-20210621090321.json"
+    />
+  </head>
+  <body>
+    <template id="proxy-card-search-result-item-template">
+      <li class="tcg-proxy__search-result-item">
+        <span class="tcg-proxy__search-result-item__name">NAME</span>
+        (<span class="tcg-proxy__search-result-item__misc">SET #999 Foil</span>)
+      </li>
+    </template>
+
+    <template id="proxy-card-template">
+      <div class="tcg-proxy__card"></div>
+
+      <div class="tcg-proxy__form">
+        <div>
+          <input
+            class="tcg-proxy__name-search"
+            type="text"
+            placeholder="Search by English card name…"
+          />
+        </div>
+        <ul class="tcg-proxy__search-results"></ul>
+      </div>
+    </template>
+
+    <div class="tcg-card-set">
+      <div class="tcg-card-row">
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+      </div>
+      <div class="tcg-card-row">
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+      </div>
+      <div class="tcg-card-row">
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+        <div class="tcg-card mtg-proxy-card"></div>
+      </div>
+    </div>
+
+    <script type="module" src="app/index.js"></script>
+  </body>
+</html>
