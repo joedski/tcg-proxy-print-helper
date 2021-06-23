@@ -1,0 +1,26 @@
+{
+  "name": "mtg-proxy-print-helper",
+  "version": "0.0.0",
+  "description": "Simple helper to help me print proxies for quick use",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "magic-the-gathering",
+    "tcg",
+    "tcg-card-proxy"
+  ],
+  "author": "Joe Sikorski <joedski@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "0.12.3"
+  },
+  "dependencies": {
+    "@koa/router": "10.0.0",
+    "koa": "2.13.1",
+    "koa-static": "5.0.0",
+    "uhtml": "2.7.5"
+  }
+}
