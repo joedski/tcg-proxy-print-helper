@@ -1,17 +1,19 @@
 /* Some generic styles */
 
-.tcg-card-set {
+/* .tcg-card-set {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
+} */
 
 .tcg-card-row {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+
+  break-inside: avoid;
 }
 
 .tcg-card {

@@ -1,7 +1,12 @@
+body {
+  font-family: sans-serif;
+}
+
 /* Search Form */
 
 .tcg-proxy__form {
-  position: absolute;
+  z-index: 100000;
+  position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
@@ -13,6 +18,12 @@
 
   opacity: 0;
   transition: opacity 0.3s;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  padding: 1.5rem;
 }
 
 .tcg-proxy__form:hover {
@@ -23,6 +34,18 @@
   .tcg-proxy__form {
     display: none;
   }
+}
+
+.tcg-proxy__form > * {
+  margin: 0;
+}
+
+.tcg-proxy__form > * + * {
+  margin-top: 1rem;
+}
+
+.tcg-proxy__card-list {
+  flex: 1 1 auto;
 }
 
 /* The Card! */

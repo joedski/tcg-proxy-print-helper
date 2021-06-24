@@ -14,7 +14,7 @@
     />
   </head>
   <body>
-    <template id="proxy-card-search-result-item-template">
+    <!-- <template id="proxy-card-search-result-item-template">
       <li class="tcg-proxy__search-result-item">
         <span class="tcg-proxy__search-result-item__name">NAME</span>
         (<span class="tcg-proxy__search-result-item__misc">SET #999 Foil</span>)
@@ -34,25 +34,10 @@
         </div>
         <ul class="tcg-proxy__search-results"></ul>
       </div>
-    </template>
+    </template> -->
 
-    <div class="tcg-card-set">
-      <div class="tcg-card-row">
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-      </div>
-      <div class="tcg-card-row">
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-      </div>
-      <div class="tcg-card-row">
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-        <div class="tcg-card mtg-proxy-card"></div>
-      </div>
-    </div>
+    <!-- Pattern: .tcg-card-set>.tcg-card-row>.tcg-card*3 -->
+    <div class="tcg-card-set"></div>
 
     <script type="module" src="app/index.js"></script>
   </body>
