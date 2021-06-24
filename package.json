@@ -4,8 +4,9 @@
   "description": "Simple helper to help me print proxies for quick use",
   "main": "index.html",
   "scripts": {
-    "start": "http-server .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run build:deps && http-server .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:deps": "rollup --config rollup.uhtml.js"
   },
   "keywords": [
     "magic-the-gathering",
@@ -15,7 +16,10 @@
   "author": "Joe Sikorski <joedski@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "http-server": "0.12.3"
+    "@rollup/plugin-node-resolve": "13.0.0",
+    "http-server": "0.12.3",
+    "rollup": "2.52.2",
+    "shelljs": "0.8.4"
   },
   "dependencies": {
     "@koa/router": "10.0.0",
