@@ -18,13 +18,21 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "13.0.0",
     "http-server": "0.12.3",
+    "jest": "27.0.5",
     "rollup": "2.52.2",
+    "rollup-jest": "1.1.1",
     "shelljs": "0.8.4"
   },
   "dependencies": {
     "@koa/router": "10.0.0",
+    "@types/jest": "26.0.23",
     "koa": "2.13.1",
     "koa-static": "5.0.0",
     "uhtml": "2.7.5"
+  },
+  "jest": {
+    "transform": {
+      "\\.m?js$": "rollup-jest"
+    }
   }
 }
