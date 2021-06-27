@@ -1,13 +1,56 @@
 // @ts-check
+import { Result, AsyncData } from "./util.js";
 import { render, html } from "./uhtml.js";
 
-app(document.querySelector(".tcg-card-set"), CardProxiesApp);
+app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
+  effects: [
+    function fetchCardData(ctx) {
+      // ...
+    },
+  ],
+});
 
-function app(where, component) {
+/**
+ * TODO
+ * @typedef {object} CardIdentifier
+ */
+
+/**
+ * TODO
+ * @typedef {object} ScryfallCardObject
+ */
+
+/**
+ * @template TState
+ * @typedef {object} AppContext
+ * @property {TState} state
+ * @property {(mapState: (state: TState) => TState) => void} update
+ */
+
+/**
+ * @typedef {object} CardProxiesAppState
+ * @property {object} form
+ * @property {string} form.cardListText
+ * @property {Result<CardIdentifier[], any>} cardListResult
+ * @property {AsyncData<ScryfallCardObject, any>} cardData
+ */
+
+// We could generalize this by adding the `initialState` getter to the parameters.
+// It'd have to be required, naturally.  Should just use an object argument.
+/**
+ * @param {Node} where
+ * @param {(ctx: AppContext<CardProxiesAppState>) => any} component
+ * @param {object} [options]
+ * @param {Array<(ctx: AppContext<CardProxiesAppState>) => void>} [options.effects]
+ * @returns
+ */
+function app(where, component, { effects = [] } = {}) {
+  /** @type {AppContext<CardProxiesAppState>} */
   const ctx = {
     state: initialState(),
     update(mapState) {
       ctx.state = mapState(ctx.state);
+      effects.forEach((effectExecutor) => effectExecutor(ctx));
       render(where, component(ctx));
     },
   };
@@ -15,12 +58,14 @@ function app(where, component) {
   return render(where, component(ctx));
 }
 
+/** @returns {CardProxiesAppState} */
 function initialState() {
   return {
     form: {
       cardListText: "",
     },
-    currentCard: null,
+    cardListResult: Result.Ok([]),
+    cardData: AsyncData.NotAsked(),
   };
 }
 
