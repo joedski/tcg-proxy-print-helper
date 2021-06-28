@@ -15,7 +15,7 @@ export function parseCardList(cardListString) {
 }
 
 const CARD_LIST_LINE_PATTERN =
-  /^([0-9]+) +([^\[\]]+)(?: +\[([^\[\]]+)\](?: +([0-9]+))?)?$/;
+  /^([0-9]+) +([^\[\]]+)(?: +\[([^\[\]]+)\](?: +([^ \r\n\t]+))?)?$/;
 
 export function parseCardListLine(line, lineIndex) {
   const lineMatches = CARD_LIST_LINE_PATTERN.exec(line);
@@ -41,8 +41,7 @@ export function parseCardListLine(line, lineIndex) {
 
   const count = parseInt(countString, 10);
 
-  const collectorNumber =
-    collectorNumberString != null ? parseInt(collectorNumberString, 10) : null;
+  const collectorNumber = collectorNumberString || null;
 
   return {
     count,

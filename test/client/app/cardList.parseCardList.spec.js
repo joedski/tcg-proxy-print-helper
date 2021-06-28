@@ -51,7 +51,7 @@ test("Parses a single row with card count, name, set, and collector number", () 
       count: 54,
       name: "Relentless Rats",
       set: "plist",
-      collectorNumber: 112,
+      collectorNumber: "112",
     },
   ]);
 });
@@ -66,7 +66,7 @@ test("Parses multiple rows", () => {
       count: 54,
       name: "Relentless Rats",
       set: "plist",
-      collectorNumber: 112,
+      collectorNumber: "112",
     },
     {
       count: 6,
@@ -86,7 +86,7 @@ test("Parses multiple rows, trimming whitespace from either end", () => {
       count: 54,
       name: "Relentless Rats",
       set: "plist",
-      collectorNumber: 112,
+      collectorNumber: "112",
     },
     {
       count: 6,
@@ -104,9 +104,16 @@ test("Errors if the card count is not a finite number", () => {
   }).toThrow();
 });
 
-test("Errors if the collector number is not a finite number", () => {
-  expect(() => {
-    parseCardList(`54 Relentless Rats [plist] onetwelve
-  `);
-  }).toThrow();
+test("Parses row with non-numeric collector number", () => {
+  const actual = parseCardList(`54 Relentless Rats [plist] onetwelve
+`);
+
+  expect(actual).toEqual([
+    {
+      count: 54,
+      name: "Relentless Rats",
+      set: "plist",
+      collectorNumber: "onetwelve",
+    },
+  ]);
 });
