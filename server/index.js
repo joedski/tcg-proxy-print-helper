@@ -85,16 +85,44 @@ searchRouter.post("/cardList", async (ctx) => {
     return;
   }
 
-  // const cards = cardDb.filter(card => {
-  //   for (const cardIdentifier of requestBody) {
-  //     const isNameMatched = card.name.toLowerCase() === cardIdentifier.name.toLowerCase();
+  const isCardIdentifierMatched = new Map();
 
-  //   }
-  //   // if (card.name.toLowerCase())
-  // })
+  const cards = cardDb.filter((card) => {
+    if (isCardIdentifierMatched.size === requestBody.length) {
+      return false;
+    }
 
-  // Just echo it to make sure I did the read right.
-  ctx.body = requestBody;
+    if (!card.games.includes("paper")) {
+      return false;
+    }
+
+    for (const cardIdentifier of requestBody) {
+      if (isCardIdentifierMatched.get(cardIdentifier)) {
+        continue;
+      }
+
+      const isNameMatched =
+        card.name.toLowerCase() === cardIdentifier.name.toLowerCase();
+      const isSetMatched =
+        typeof cardIdentifier.set === "string"
+          ? card.set.toLowerCase() === cardIdentifier.set.toLowerCase()
+          : true;
+      const isCollectorNumberMatched =
+        typeof cardIdentifier.collectorNumber === "string"
+          ? card.collector_number.toLowerCase() ===
+            cardIdentifier.collectorNumber.toLowerCase()
+          : true;
+
+      if (isNameMatched && isSetMatched && isCollectorNumberMatched) {
+        isCardIdentifierMatched.set(cardIdentifier, true);
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  ctx.body = cards;
 });
 
 // const serveStaticFiles = require("koa-static")(path.resolve("..", "static"));
