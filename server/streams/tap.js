@@ -8,7 +8,7 @@ exports.tap = function tap(effect, { objectMode = false } = {}) {
     decodeStrings: false,
     transform(chunk, encoding, callback) {
       effect(chunk, encoding);
-      callback();
+      callback(null, chunk);
     },
     flush(callback) {
       callback();
