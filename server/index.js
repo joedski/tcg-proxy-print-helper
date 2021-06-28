@@ -74,7 +74,7 @@ function keepPreferredCardRecord(prev, next) {
     return prev.released_at > next.released_at ? prev : next;
   }
 
-  return prev;
+  return next;
 }
 
 searchRouter.post("/cardList", async (ctx) => {
@@ -110,8 +110,8 @@ searchRouter.post("/cardList", async (ctx) => {
 
   const recordByIdentifier = new Map();
 
-  const cards = cardDb.filter((card) => {
-    if (!card.digital) {
+  cardDb.filter((card) => {
+    if (card.digital) {
       return false;
     }
 
@@ -131,19 +131,26 @@ searchRouter.post("/cardList", async (ctx) => {
           : true;
       const preferredRecord = keepPreferredCardRecord(prevRecordFound, card);
 
-      if (isNameMatched && isSetMatched && isCollectorNumberMatched) {
-        if (prevRecordFound == null || preferredRecord !== card) {
-          recordByIdentifier.set(cardIdentifier, preferredRecord);
-        }
-
-        return true;
+      if (!(isNameMatched && isSetMatched && isCollectorNumberMatched)) {
+        continue;
       }
+
+      if (prevRecordFound == null || prevRecordFound !== preferredRecord) {
+        recordByIdentifier.set(cardIdentifier, preferredRecord);
+      }
+
+      return true;
     }
 
     return false;
   });
 
-  ctx.body = cards;
+  ctx.body = {
+    cards: requestBody.map((identifier) => ({
+      identifier,
+      card: recordByIdentifier.get(identifier) || null,
+    })),
+  };
 });
 
 // const serveStaticFiles = require("koa-static")(path.resolve("..", "static"));
