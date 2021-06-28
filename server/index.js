@@ -66,6 +66,18 @@ function keepPreferredCardRecord(prev, next) {
     return prev || next;
   }
 
+  // This has to be done because Scryfall also indexes tokens,
+  // which include things like the "Llanowar Elves" token created by
+  // the "Llanowar Mentor".
+  const prevIsToken =
+    prev.layout === "token" || prev.layout === "double_faced_token";
+  const nextIsToken =
+    next.layout === "token" || next.layout === "double_faced_token";
+
+  if (prevIsToken !== nextIsToken) {
+    return prevIsToken ? next : prev;
+  }
+
   if (prev.digital !== next.digital) {
     return prev.digital ? next : prev;
   }
