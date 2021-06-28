@@ -12,6 +12,7 @@ const {
 } = require("./streams/limitLength");
 const { collectString } = require("./streams/collectString");
 const { promiseLastFromStream } = require("./streams/promiseFromStream");
+const { getPageParams } = require("./util/page");
 
 const CARD_DB_PATH = path.resolve(
   __dirname,
@@ -32,10 +33,8 @@ const searchRouter = new Router();
 
 searchRouter.get("/cards", async (ctx) => {
   const name = ctx.query.name;
-  const page = 0;
-  const pageSize = 10;
+  const pageParams = getPageParams(ctx.query);
 
-  // Should be a 400.
   if (!name) {
     ctx.status = 400;
     return;
@@ -47,20 +46,32 @@ searchRouter.get("/cards", async (ctx) => {
     (card) => card.name.toLowerCase().indexOf(nameNormalized) !== -1
   );
 
-  const sliceStart = page * pageSize;
+  const sliceStart = pageParams.page * pageParams.size;
 
-  const sentCards = allCards.slice(sliceStart, pageSize);
+  const sentCards = allCards.slice(sliceStart, pageParams.size);
 
   ctx.headers["content-type"] = "application/json";
   ctx.body = {
     contents: sentCards,
-    page: page,
-    size: pageSize,
-    totalPages: Math.ceil(allCards.length / pageSize),
+    ...pageParams,
+    totalPages: Math.ceil(allCards.length / pageParams.size),
     totalElements: allCards.length,
   };
 });
 
+/**
+ * Keeps the "more preferred" card by checking, in order:
+ *
+ * 1. If either is nullish, returns the not-nullish one or else nullish.
+ * 2. If either but not both are a token or double_faced_token, prefer the non-token.
+ * 3. If either but not both are digital, prefer the non-digital.
+ * 4. If they were released at different times, prefer the newer one.
+ * 5. Failing that, return the next one.
+ *
+ * @param {object} prev
+ * @param {object} next
+ * @returns {object}
+ */
 function keepPreferredCardRecord(prev, next) {
   if (!prev || !next) {
     return prev || next;
@@ -122,11 +133,7 @@ searchRouter.post("/cardList", async (ctx) => {
 
   const recordByIdentifier = new Map();
 
-  cardDb.filter((card) => {
-    if (card.digital) {
-      return false;
-    }
-
+  for (const card of cardDb) {
     for (const cardIdentifier of requestBody) {
       const prevRecordFound = recordByIdentifier.get(cardIdentifier);
 
@@ -151,11 +158,9 @@ searchRouter.post("/cardList", async (ctx) => {
         recordByIdentifier.set(cardIdentifier, preferredRecord);
       }
 
-      return true;
+      break;
     }
-
-    return false;
-  });
+  }
 
   ctx.body = {
     cards: requestBody.map((identifier) => ({
