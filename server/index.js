@@ -5,17 +5,21 @@ const fs = require("fs");
 const Koa = require("koa");
 const Router = require("@koa/router");
 
-console.log("loading Card DB...");
-// Yeah this takes about 20 seconds.
-const cardDbText = fs.readFileSync(
-  path.resolve(
-    __dirname,
-    "..",
-    "data",
-    "scryfall-default-cards-20210621090321.json"
-  ),
-  "utf-8"
+const { stringFromBuffer, toUtf8 } = require("./streams/stringFromBuffer");
+const { limitLength } = require("./streams/limitLength");
+const { collectString } = require("./streams/collectString");
+const { promiseLastFromStream } = require("./streams/promiseFromStream");
+
+const CARD_DB_PATH = path.resolve(
+  __dirname,
+  "..",
+  "data",
+  "scryfall-default-cards-20210621090321.json"
 );
+
+console.log("loading Card DB...");
+// Yeah this takes about 20 seconds, but to be fair it's 200+ MB.
+const cardDbText = fs.readFileSync(CARD_DB_PATH, "utf-8");
 const cardDb = JSON.parse(cardDbText);
 console.log("Card DB loaded!");
 
@@ -54,6 +58,45 @@ searchRouter.get("/cards", async (ctx) => {
   };
 });
 
+searchRouter.post("/cardList", async (ctx) => {
+  const requestContentType = ctx.request.header["content-type"];
+
+  if (requestContentType.toLowerCase().indexOf("application/json") !== 0) {
+    ctx.status = 415;
+    return;
+  }
+
+  let requestBody;
+
+  try {
+    requestBody = await promiseLastFromStream(
+      ctx.req
+        .pipe(limitLength(8 * 1024))
+        .pipe(stringFromBuffer(toUtf8))
+        .pipe(collectString())
+    ).then((body) => JSON.parse(body));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      ctx.status = 400;
+    } else {
+      throw error;
+    }
+
+    return;
+  }
+
+  // const cards = cardDb.filter(card => {
+  //   for (const cardIdentifier of requestBody) {
+  //     const isNameMatched = card.name.toLowerCase() === cardIdentifier.name.toLowerCase();
+
+  //   }
+  //   // if (card.name.toLowerCase())
+  // })
+
+  // Just echo it to make sure I did the read right.
+  ctx.body = requestBody;
+});
+
 // const serveStaticFiles = require("koa-static")(path.resolve("..", "static"));
 
 // searchRouter.get("static", "/(.*)", serveStaticFiles);
@@ -62,7 +105,7 @@ app.use(searchRouter.routes());
 app.use(searchRouter.allowedMethods());
 // app.use(serveStaticFiles);
 
-const PORT = 3030;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3030;
 
 app.listen(PORT);
 console.log(`App started on port ${PORT}`);
