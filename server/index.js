@@ -170,13 +170,14 @@ searchRouter.post("/cardList", async (ctx) => {
   };
 });
 
-// const serveStaticFiles = require("koa-static")(path.resolve("..", "static"));
+const serveStaticFiles = require("koa-static")(
+  path.resolve(__dirname, "..", "static")
+);
 
-// searchRouter.get("static", "/(.*)", serveStaticFiles);
+searchRouter.get("/(.*)", serveStaticFiles);
 
 app.use(searchRouter.routes());
 app.use(searchRouter.allowedMethods());
-// app.use(serveStaticFiles);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3030;
 
