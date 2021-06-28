@@ -3,6 +3,14 @@
 const stream = require("stream");
 const { createPrivateStore } = require("../util/private.js");
 
+class LengthLimitExceededError extends Error {
+  constructor(message) {
+    super(message);
+  }
+}
+
+exports.LengthLimitExceededError = LengthLimitExceededError;
+
 /**
  * Counts the bytes/octets coming in, and throws an error that count exceeds
  * the specified maximum.
@@ -18,14 +26,27 @@ exports.limitLength = function limitLength(maxByteLength) {
     decodeStrings: false,
     transform(chunk, encoding, callback) {
       const prevTotalBytes = bufferBytes.get(this);
-      const nextBytes = Buffer.of(chunk).byteLength;
 
-      if (prevTotalBytes + nextBytes > maxByteLength) {
-        callback(new Error(`Input exceeded limit of ${maxByteLength}KB`));
-        return;
+      // Shouldn't really happen after we error.
+      if (prevTotalBytes > maxByteLength) {
+        callback();
       }
 
-      bufferBytes.set(this, prevTotalBytes + nextBytes);
+      const nextBytes = Buffer.isBuffer(chunk)
+        ? chunk.byteLength
+        : [...chunk].length;
+      const nextTotalBytes = prevTotalBytes + nextBytes;
+
+      bufferBytes.set(this, nextTotalBytes);
+
+      if (nextTotalBytes > maxByteLength) {
+        callback(
+          new LengthLimitExceededError(
+            `Input exceeded limit of ${maxByteLength} bytes`
+          )
+        );
+        return;
+      }
 
       callback(null, chunk);
     },

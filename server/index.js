@@ -6,7 +6,10 @@ const Koa = require("koa");
 const Router = require("@koa/router");
 
 const { stringFromBuffer, toUtf8 } = require("./streams/stringFromBuffer");
-const { limitLength } = require("./streams/limitLength");
+const {
+  limitLength,
+  LengthLimitExceededError,
+} = require("./streams/limitLength");
 const { collectString } = require("./streams/collectString");
 const { promiseLastFromStream } = require("./streams/promiseFromStream");
 
@@ -58,6 +61,22 @@ searchRouter.get("/cards", async (ctx) => {
   };
 });
 
+function keepPreferredCardRecord(prev, next) {
+  if (!prev || !next) {
+    return prev || next;
+  }
+
+  if (prev.digital !== next.digital) {
+    return prev.digital ? next : prev;
+  }
+
+  if (prev.released_at !== next.released_at) {
+    return prev.released_at > next.released_at ? prev : next;
+  }
+
+  return prev;
+}
+
 searchRouter.post("/cardList", async (ctx) => {
   const requestContentType = ctx.request.header["content-type"];
 
@@ -69,14 +88,18 @@ searchRouter.post("/cardList", async (ctx) => {
   let requestBody;
 
   try {
-    requestBody = await promiseLastFromStream(
+    requestBody = await promiseLastFromStream((handleError) =>
       ctx.req
         .pipe(limitLength(8 * 1024))
+        .on("error", handleError)
         .pipe(stringFromBuffer(toUtf8))
         .pipe(collectString())
     ).then((body) => JSON.parse(body));
   } catch (error) {
-    if (error instanceof SyntaxError) {
+    if (
+      error instanceof SyntaxError ||
+      error instanceof LengthLimitExceededError
+    ) {
       ctx.status = 400;
     } else {
       throw error;
@@ -85,21 +108,15 @@ searchRouter.post("/cardList", async (ctx) => {
     return;
   }
 
-  const isCardIdentifierMatched = new Map();
+  const recordByIdentifier = new Map();
 
   const cards = cardDb.filter((card) => {
-    if (isCardIdentifierMatched.size === requestBody.length) {
-      return false;
-    }
-
-    if (!card.games.includes("paper")) {
+    if (!card.digital) {
       return false;
     }
 
     for (const cardIdentifier of requestBody) {
-      if (isCardIdentifierMatched.get(cardIdentifier)) {
-        continue;
-      }
+      const prevRecordFound = recordByIdentifier.get(cardIdentifier);
 
       const isNameMatched =
         card.name.toLowerCase() === cardIdentifier.name.toLowerCase();
@@ -112,9 +129,13 @@ searchRouter.post("/cardList", async (ctx) => {
           ? card.collector_number.toLowerCase() ===
             cardIdentifier.collectorNumber.toLowerCase()
           : true;
+      const preferredRecord = keepPreferredCardRecord(prevRecordFound, card);
 
       if (isNameMatched && isSetMatched && isCollectorNumberMatched) {
-        isCardIdentifierMatched.set(cardIdentifier, true);
+        if (prevRecordFound == null || preferredRecord !== card) {
+          recordByIdentifier.set(cardIdentifier, preferredRecord);
+        }
+
         return true;
       }
     }
