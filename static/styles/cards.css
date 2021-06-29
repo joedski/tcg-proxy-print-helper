@@ -7,6 +7,10 @@
   align-items: center;
 } */
 
+.tcg-card-page {
+  break-after: page;
+}
+
 .tcg-card-row {
   display: flex;
   flex-direction: row;

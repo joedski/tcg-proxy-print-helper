@@ -236,27 +236,34 @@ function onRenderListClick(ctx) {
 
 function CardProxyGrid(ctx) {
   const proxyList = expandCardList(ctx.state);
-  const proxyRows = proxyList.reduce(partition(3), []);
+  const proxyPages = proxyList
+    .reduce(partition(3), [])
+    .reduce(partition(3), []);
 
-  return proxyRows.map(
-    (row) => html`
-      <div class="tcg-card-row">
-        ${row.map((entry) =>
-          !entry.card
-            ? html`<div class="tcg-card">
-                No card found for "${entry.identifier.name}"!
-              </div>`
-            : html`<div class="tcg-card">
-                <div class="tcg-proxy__card">
-                  <img
-                    class="tcg-card-image"
-                    src="${entry.card.image_uris.normal}"
-                  />
-                </div>
-              </div>`
+  return proxyPages.map(
+    (page) =>
+      html`<div class="tcg-card-page">
+        ${page.map(
+          (row) => html`
+            <div class="tcg-card-row">
+              ${row.map((entry) =>
+                !entry.card
+                  ? html`<div class="tcg-card">
+                      No card found for "${entry.identifier.name}"!
+                    </div>`
+                  : html`<div class="tcg-card">
+                      <div class="tcg-proxy__card">
+                        <img
+                          class="tcg-card-image"
+                          src="${entry.card.image_uris.normal}"
+                        />
+                      </div>
+                    </div>`
+              )}
+            </div>
+          `
         )}
-      </div>
-    `
+      </div>`
   );
 }
 
