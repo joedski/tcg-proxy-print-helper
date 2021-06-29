@@ -5,8 +5,57 @@ import { parseCardList } from "./cardList.js";
 
 app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
   effects: [
-    function fetchCardData(ctx) {
-      // ...
+    async function fetchCardData(ctx) {
+      const canFetch = ctx.state.cardData.cata({
+        NotAsked: () => true,
+        Waiting: () => false,
+        Error: () => true,
+        Data: () => true,
+      });
+
+      const cardList = ctx.state.cardListResult.getOkOr(null);
+
+      const shouldFetch =
+        cardList != null &&
+        ctx.state.cardListResult !== ctx.prevState.cardListResult;
+
+      if (!(canFetch && shouldFetch)) {
+        return;
+      }
+
+      // Server should just punt back an empty response.content array
+      // if cardList.length === 0.
+
+      const response = await fetch("/cardList", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(cardList),
+      });
+
+      if (!response.ok) {
+        ctx.update((state) => ({
+          ...state,
+          cardData: AsyncData.Error(
+            Object.assign(
+              new Error(`${response.status}: ${response.statusText}`),
+              {
+                response,
+              }
+            )
+          ),
+        }));
+
+        return;
+      }
+
+      const responseBody = await response.json();
+
+      ctx.update((state) => ({
+        ...state,
+        cardData: AsyncData.Data(responseBody.cards),
+      }));
     },
   ],
 });
@@ -29,6 +78,14 @@ app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
  */
 
 /**
+ * @template TState
+ * @typedef {object} AppEffectContext
+ * @property {TState} state
+ * @property {TState} prevState
+ * @property {(mapState: (state: TState) => TState) => void} update
+ */
+
+/**
  * @typedef {object} CardProxiesAppState
  * @property {object} form
  * @property {string} form.cardListText
@@ -42,7 +99,7 @@ app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
  * @param {Node} where
  * @param {(ctx: AppContext<CardProxiesAppState>) => any} component
  * @param {object} [options]
- * @param {Array<(ctx: AppContext<CardProxiesAppState>) => void>} [options.effects]
+ * @param {Array<(ctx: AppEffectContext<CardProxiesAppState>) => void>} [options.effects]
  * @returns
  */
 function app(where, component, { effects = [] } = {}) {
@@ -50,8 +107,23 @@ function app(where, component, { effects = [] } = {}) {
   const ctx = {
     state: initialState(),
     update(mapState) {
+      const prevState = ctx.state;
       ctx.state = mapState(ctx.state);
-      effects.forEach((effectExecutor) => effectExecutor(ctx));
+
+      // This isn't really sufficient, but I don't feel like reimplementing all of redux yet.
+      const effectCtx = {
+        get state() {
+          return ctx.state;
+        },
+        get prevState() {
+          return prevState;
+        },
+        // For now, just completely eliminating recursion with effects.
+        update: ctx.update,
+      };
+
+      effects.forEach((effectExecutor) => effectExecutor(effectCtx));
+
       render(where, component(ctx));
     },
   };
