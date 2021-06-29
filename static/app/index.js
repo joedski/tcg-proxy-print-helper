@@ -241,7 +241,20 @@ function CardProxyGrid(ctx) {
   return proxyRows.map(
     (row) => html`
       <div class="tcg-card-row">
-        ${row.map((card) => html`<div class="tcg-card">${card.name}</div>`)}
+        ${row.map((entry) =>
+          !entry.card
+            ? html`<div class="tcg-card">
+                No card found for "${entry.identifier.name}"!
+              </div>`
+            : html`<div class="tcg-card">
+                <div class="tcg-proxy__card">
+                  <img
+                    class="tcg-card-image"
+                    src="${entry.card.image_uris.normal}"
+                  />
+                </div>
+              </div>`
+        )}
       </div>
     `
   );
@@ -253,16 +266,19 @@ function expandCardList(state) {
   const cardMap = new WeakMap();
 
   identifierList.forEach((identifier, index) => {
-    if (cardData[index].card) {
-      cardMap.set(identifier, cardData[index].card);
-    }
+    if (!cardData[index] || !cardData[index].card) return;
+
+    cardMap.set(identifier, cardData[index].card);
   });
 
   const proxiesList = [];
 
   for (const identifier of identifierList) {
     for (let instance = 0; instance < identifier.count; ++instance) {
-      proxiesList.push(cardMap.get(identifier));
+      proxiesList.push({
+        identifier,
+        card: cardMap.get(identifier),
+      });
     }
   }
 

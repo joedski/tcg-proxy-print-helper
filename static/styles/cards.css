@@ -10,8 +10,8 @@
 .tcg-card-row {
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  align-items: left;
+  justify-content: flex-start;
+  align-items: flex-start;
 
   break-inside: avoid;
 }
@@ -23,4 +23,13 @@
   height: 3.455in;
 
   position: relative;
+
+  overflow: hidden;
+}
+
+.tcg-card-image {
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: auto;
 }
