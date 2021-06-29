@@ -255,7 +255,9 @@ function CardProxyGrid(ctx) {
                       <div class="tcg-proxy__card">
                         <img
                           class="tcg-card-image"
-                          src="${entry.card.image_uris.normal}"
+                          src="${entry.card.card_faces
+                            ? entry.card.card_faces[0].image_uris.normal
+                            : entry.card.image_uris.normal}"
                         />
                       </div>
                     </div>`
