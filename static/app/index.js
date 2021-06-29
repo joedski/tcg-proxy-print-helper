@@ -1,6 +1,7 @@
 // @ts-check
 import { Result, AsyncData } from "./util.js";
 import { render, html } from "./uhtml.js";
+import { parseCardList } from "./cardList.js";
 
 app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
   effects: [
@@ -69,8 +70,33 @@ function initialState() {
   };
 }
 
+/**
+ *
+ * @param {AppContext<CardProxiesAppState>} ctx
+ * @returns
+ */
 function CardProxiesApp(ctx) {
-  return html` ${CardProxiesForm(ctx)} ${CardProxyGrid(ctx)} `;
+  return html`
+    ${CardProxiesForm(ctx)}
+    ${ctx.state.cardData.cata({
+      NotAsked: () => html`
+        <div class="app-misc-container">
+          <div class="app-message app-message--info">Load a list of cards!</div>
+        </div>
+      `,
+      Waiting: () => html`
+        <div class="app-misc-container">
+          <div class="app-message app-message--info">Loading...</div>
+        </div>
+      `,
+      Error: (error) => html`
+        <div class="app-message app-message--danger">
+          An error occurred trying to load the card list: ${error.message}
+        </div>
+      `,
+      Data: () => CardProxyGrid(ctx),
+    })}
+  `;
 }
 
 function CardProxiesForm(ctx) {
@@ -78,18 +104,37 @@ function CardProxiesForm(ctx) {
     <div class="tcg-proxy__form">
       <h1>MTG Proxies Helper</h1>
       <p>
-        Enter a TCGPlayer-style list of cards below in "(Count) (Cardname)
-        [Set]" format.
+        Enter a TCGPlayer-style list of cards below in "(Count) (Cardname) [Set]
+        (Collector Number)" format.
       </p>
+      ${ctx.state.cardListResult.cata({
+        Ok: () => [],
+        Failure: (error) => html`
+          <div class="app-message app-message--danger">
+            Error processing this card list: ${error.message}
+          </div>
+        `,
+      })}
       <textarea
         class="tcg-proxy__card-list"
         type="text"
         placeholder="4 Black Lotus
-4 Ancestral Recall [2ed]"
+4 Ancestral Recall [2ed]
+1 Vampiric Tutor [cmr] 656
+"
         onkeyup=${onCardListKeyup(ctx)}
       >
 ${ctx.state.form.cardListText}</textarea
       >
+      <div class="tcg-proxy__form-controls">
+        <button
+          class="app-button"
+          type="submit"
+          onclick="${onRenderListClick(ctx)}"
+        >
+          Render List
+        </button>
+      </div>
     </div>
   `;
 }
@@ -106,6 +151,17 @@ function onCardListKeyup(ctx) {
   };
 }
 
+function onRenderListClick(ctx) {
+  return () => {
+    ctx.update((state) => ({
+      ...state,
+      cardListResult: Result.ofCall(() =>
+        parseCardList(state.form.cardListText)
+      ),
+    }));
+  };
+}
+
 function CardProxyGrid(ctx) {
   return html`
     <div class="tcg-card-row">
@@ -115,18 +171,4 @@ function CardProxyGrid(ctx) {
       </div>
     </div>
   `;
-}
-
-function partition(size) {
-  function $partition(parts, next) {
-    if (!parts.length || parts[parts.length - 1].length >= size) {
-      parts.push([]);
-    }
-
-    const last = parts[parts.length - 1];
-
-    last.push(next);
-
-    return parts;
-  }
 }

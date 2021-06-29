@@ -1,5 +1,33 @@
 body {
   font-family: sans-serif;
+  padding: 0;
+}
+
+/* Other things */
+
+.app-misc-container {
+  padding: 1rem;
+}
+
+.app-message {
+  padding: 1rem;
+  border: 1px solid rgb(214, 214, 214);
+  border-radius: 3px;
+  background-color: white;
+}
+
+.app-message--info {
+  border-color: rgb(151, 171, 190);
+  background-color: rgb(229, 240, 251);
+}
+
+.app-message--danger {
+  border-color: rgb(220, 126, 104);
+  background-color: rgb(251, 231, 229);
+}
+
+.app-button {
+  padding: 0.5em;
 }
 
 /* Search Form */
@@ -46,6 +74,20 @@ body {
 
 .tcg-proxy__card-list {
   flex: 1 1 auto;
+}
+
+.tcg-proxy__form-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+}
+
+.tcg-proxy__form-controls > * {
+  flex: 1 1 auto;
+}
+
+.tcg-proxy__form-controls > * + * {
+  margin-left: 0.5rem;
 }
 
 /* The Card! */

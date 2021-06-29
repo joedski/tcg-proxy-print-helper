@@ -1,6 +1,12 @@
 // @ts-check
 
 /**
+ * @template TSum
+ * @template TTag
+ * @typedef {TSum extends [TTag, ...infer TArgs] ? TArgs extends any[] ? TArgs : [] : never} ArgsOfTag
+ */
+
+/**
  * Utility predicate to make case-based logic easier.
  * @template {String} TAll
  * @template {TAll} C
@@ -133,10 +139,52 @@ export class Result {
         return /** @type {Result<any, E>} */ (this);
     }
   }
+
+  /**
+   * @template R
+   * @param {{ [K in Result<T, E>["case"][0]]: (...args: ArgsOfTag<Result<T, E>["case"], K>) => R }} caseMap
+   * @returns {R}
+   */
+  cata(caseMap) {
+    const thisCase = this.case;
+    const caseHandler = caseMap[thisCase[0]];
+    const [, ...caseArgs] = thisCase;
+    return caseHandler.apply(null, caseArgs);
+  }
+
+  /**
+   * @template U
+   * @param {U} elseValue
+   * @returns {T | U}
+   */
+  getOkOr(elseValue) {
+    const thisCase = this.case;
+
+    if (taggedSumCaseIs(thisCase, "Ok")) {
+      return thisCase[1];
+    }
+
+    return elseValue;
+  }
+
+  /**
+   * @template U
+   * @param {U} elseValue
+   * @returns {E | U}
+   */
+  getFailureOr(elseValue) {
+    const thisCase = this.case;
+
+    if (taggedSumCaseIs(thisCase, "Failure")) {
+      return thisCase[1];
+    }
+
+    return elseValue;
+  }
 }
 
 /**
- * @template T
+ * @template D
  * @template E
  */
 export class AsyncData {
@@ -149,9 +197,9 @@ export class AsyncData {
   }
 
   /**
-   * @template T
-   * @param {T} value
-   * @returns {AsyncData<T, any>}
+   * @template D
+   * @param {D} value
+   * @returns {AsyncData<D, any>}
    */
   static Data(value) {
     return new AsyncData(["Data", value]);
@@ -167,9 +215,9 @@ export class AsyncData {
   }
 
   /**
-   * @template T
-   * @param {() => T} fn
-   * @returns {AsyncData<T, any>}
+   * @template D
+   * @param {() => D} fn
+   * @returns {AsyncData<D, any>}
    */
   static ofCall(fn) {
     try {
@@ -197,7 +245,7 @@ export class AsyncData {
   }
 
   constructor(
-    /** @type {['NotAsked'] | ['Waiting'] | ['Data', T] | ['Error', E]} */
+    /** @type {['NotAsked'] | ['Waiting'] | ['Data', D] | ['Error', E]} */
     thisCase
   ) {
     switch (thisCase[0]) {
@@ -224,7 +272,7 @@ export class AsyncData {
 
   /**
    * @template U
-   * @param {(value: T) => U} fn
+   * @param {(value: D) => U} fn
    * @returns {AsyncData<U, E>}
    */
   map(fn) {
@@ -241,7 +289,7 @@ export class AsyncData {
    *
    * @template U
    * @template F
-   * @param {(value: T) => AsyncData<U, F>} fn
+   * @param {(value: D) => AsyncData<U, F>} fn
    * @returns {AsyncData<U, E | F>}
    */
   flatMap(fn) {
@@ -266,7 +314,63 @@ export class AsyncData {
         return /** @type {AsyncData<any, E>} */ (this);
     }
   }
+
+  /**
+   * @template R
+   * @param {{ [K in AsyncData<D, E>["case"][0]]: (...args: ArgsOfTag<AsyncData<D, E>["case"], K>) => R }} caseMap
+   * @returns {R}
+   */
+  cata(caseMap) {
+    const thisCase = this.case;
+    const caseHandler = caseMap[thisCase[0]];
+    const [, ...caseArgs] = thisCase;
+    return caseHandler.apply(null, caseArgs);
+  }
+
+  /**
+   * @template U
+   * @param {U} elseValue
+   * @returns {D | U}
+   */
+  getDataOr(elseValue) {
+    const thisCase = this.case;
+
+    if (taggedSumCaseIs(thisCase, "Data")) {
+      return thisCase[1];
+    }
+
+    return elseValue;
+  }
+
+  /**
+   * @template U
+   * @param {U} elseValue
+   * @returns {E | U}
+   */
+  getErrorOr(elseValue) {
+    const thisCase = this.case;
+
+    if (taggedSumCaseIs(thisCase, "Error")) {
+      return thisCase[1];
+    }
+
+    return elseValue;
+  }
 }
 
 const $notAsked = new AsyncData(["NotAsked"]);
 const $waiting = new AsyncData(["Waiting"]);
+
+export function partition(size) {
+  function $partition(parts, next) {
+    if (!parts.length || parts[parts.length - 1].length >= size) {
+      parts.push([]);
+    }
+
+    const last = parts[parts.length - 1];
+
+    last.push(next);
+
+    return parts;
+  }
+}
