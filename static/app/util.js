@@ -362,7 +362,7 @@ const $notAsked = new AsyncData(["NotAsked"]);
 const $waiting = new AsyncData(["Waiting"]);
 
 export function partition(size) {
-  function $partition(parts, next) {
+  return function $partition(parts, next) {
     if (!parts.length || parts[parts.length - 1].length >= size) {
       parts.push([]);
     }
@@ -372,5 +372,5 @@ export function partition(size) {
     last.push(next);
 
     return parts;
-  }
+  };
 }

@@ -1,5 +1,5 @@
 // @ts-check
-import { Result, AsyncData } from "./util.js";
+import { Result, AsyncData, partition } from "./util.js";
 import { render, html } from "./uhtml.js";
 import { parseCardList } from "./cardList.js";
 
@@ -54,7 +54,7 @@ app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
 
       ctx.update((state) => ({
         ...state,
-        cardData: AsyncData.Data(responseBody.cards),
+        cardData: AsyncData.Data(responseBody),
       }));
     },
   ],
@@ -235,12 +235,36 @@ function onRenderListClick(ctx) {
 }
 
 function CardProxyGrid(ctx) {
-  return html`
-    <div class="tcg-card-row">
-      <div class="tcg-card">
-        Test:
-        <pre>${ctx.state.form.cardListText}</pre>
+  const proxyList = expandCardList(ctx.state);
+  const proxyRows = proxyList.reduce(partition(3), []);
+
+  return proxyRows.map(
+    (row) => html`
+      <div class="tcg-card-row">
+        ${row.map((card) => html`<div class="tcg-card">${card.name}</div>`)}
       </div>
-    </div>
-  `;
+    `
+  );
+}
+
+function expandCardList(state) {
+  const identifierList = state.cardListResult.getOkOr([]);
+  const cardData = state.cardData.map((data) => data.cards).getDataOr([]);
+  const cardMap = new WeakMap();
+
+  identifierList.forEach((identifier, index) => {
+    if (cardData[index].card) {
+      cardMap.set(identifier, cardData[index].card);
+    }
+  });
+
+  const proxiesList = [];
+
+  for (const identifier of identifierList) {
+    for (let instance = 0; instance < identifier.count; ++instance) {
+      proxiesList.push(cardMap.get(identifier));
+    }
+  }
+
+  return proxiesList;
 }
