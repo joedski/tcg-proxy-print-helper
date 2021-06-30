@@ -89,6 +89,10 @@ function keepPreferredCardRecord(prev, next) {
     return prevIsToken ? next : prev;
   }
 
+  if (prev.lang !== next.lang && (prev.lang === "en" || next.lang === "en")) {
+    return next.lang === "en" ? next : prev;
+  }
+
   if (prev.digital !== next.digital) {
     return prev.digital ? next : prev;
   }
