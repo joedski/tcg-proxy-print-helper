@@ -96,10 +96,13 @@ body {
   width: 100%;
   height: 100%;
 
-  background-position: center;
-  background-size: cover;
-
   position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background-color: black;
 }
 
 .tcg-proxy__card::before,
@@ -119,5 +122,17 @@ body {
 }
 
 .tcg-proxy__card::after {
-  border: 0.01in black dashed;
+  border: 0.005in black solid;
+}
+
+.tcg-proxy__card--white {
+  background: white;
+}
+
+.tcg-proxy__card--white::before {
+  border: 0.05in black dashed;
+}
+
+.tcg-proxy__card--white::after {
+  border: 0.005in white solid;
 }
