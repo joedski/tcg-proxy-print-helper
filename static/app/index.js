@@ -252,12 +252,14 @@ function CardProxyGrid(ctx) {
                       No card found for "${entry.identifier.name}"!
                     </div>`
                   : html`<div class="tcg-card">
-                      <div class="tcg-proxy__card">
+                      <div
+                        class="${`tcg-proxy__card ${getCardBorderClassname(
+                          entry.card
+                        )}`}"
+                      >
                         <img
                           class="tcg-card-image"
-                          src="${entry.card.card_faces
-                            ? entry.card.card_faces[0].image_uris.normal
-                            : entry.card.image_uris.normal}"
+                          src="${getFrontFaceImage(entry.card)}"
                         />
                       </div>
                     </div>`
@@ -292,4 +294,21 @@ function expandCardList(state) {
   }
 
   return proxiesList;
+}
+
+function getCardBorderClassname(card) {
+  return `tcg-proxy__card--border-${card.border_color}`;
+}
+
+function getFrontFaceImage(card) {
+  if (card.image_uris != null) {
+    return card.image_uris.normal;
+  }
+
+  // For dual faced cards like MDFCs and Transforming cards.
+  if (Array.isArray(card.card_faces)) {
+    return card.card_faces[0].image_uris.normal;
+  }
+
+  return "";
 }
