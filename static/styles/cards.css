@@ -9,6 +9,12 @@
 
 .tcg-card-page {
   break-after: page;
+
+  padding: 1em 1em 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tcg-card-row {
@@ -18,6 +24,18 @@
   align-items: flex-start;
 
   break-inside: avoid;
+}
+
+.tcg-card-row {
+  border: 0.015in black solid;
+}
+
+.tcg-card-row:not(:last-child) {
+  border-bottom-width: 0;
+}
+
+.tcg-card-row:not(:first-child) {
+  border-top-width: 0;
 }
 
 .tcg-card {
@@ -31,9 +49,82 @@
   overflow: hidden;
 }
 
+.tcg-card-content {
+  width: 100%;
+  height: 100%;
+
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background-color: black;
+}
+
+.tcg-card-content::before,
+.tcg-card-content::after {
+  content: " ";
+  display: block;
+  position: absolute;
+
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.tcg-card-content::before {
+  border: 0.05in white dashed;
+}
+
+.tcg-card-content::after {
+  border: 0.015in black solid;
+}
+
+.tcg-card-content--border-white {
+  background: white;
+}
+
+.tcg-card-content--border-white::before,
+.tcg-card-content--border-silver::before {
+  border: 0.05in black dashed;
+}
+
 .tcg-card-image {
   display: block;
   margin: 0;
   width: 100%;
   height: auto;
+}
+
+/* Placeholders */
+
+.tcg-card--placeholder {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: stretch;
+}
+
+.tcg-card--placeholder > .tcg-card-content {
+  background: transparent;
+}
+
+.tcg-card--placeholder > .tcg-card-content::before {
+  display: none;
+}
+
+.tcg-card-placeholder-message {
+  padding: 0 1em;
+}
+
+.tcg-card-placeholder-message-details {
+  font-size: 9pt;
+}
+
+.tcg-card-placeholder-message > h4,
+div.tcg-card-placeholder-message-details {
+  text-align: center;
 }

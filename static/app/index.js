@@ -3,6 +3,8 @@ import { Result, AsyncData, partition } from "./util.js";
 import { render, html } from "./uhtml.js";
 import { parseCardList } from "./cardList.js";
 
+const FORM_CARD_LIST_TEXT_KEY = "MtgCardProxiesApp:state.form.cardListText";
+
 app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
   effects: [
     async function fetchCardData(ctx) {
@@ -56,6 +58,16 @@ app(document.querySelector(".tcg-card-set"), CardProxiesApp, {
         ...state,
         cardData: AsyncData.Data(responseBody),
       }));
+    },
+    function saveFormStateToLocalStorage(ctx) {
+      if (ctx.state.form.cardListText === ctx.prevState.form.cardListText) {
+        return;
+      }
+
+      localStorage.setItem(
+        FORM_CARD_LIST_TEXT_KEY,
+        ctx.state.form.cardListText
+      );
     },
   ],
 });
@@ -135,7 +147,7 @@ function app(where, component, { effects = [] } = {}) {
 function initialState() {
   return {
     form: {
-      cardListText: "",
+      cardListText: localStorage.getItem(FORM_CARD_LIST_TEXT_KEY) || "",
     },
     cardListResult: Result.Ok([]),
     cardData: AsyncData.NotAsked(),
@@ -238,6 +250,7 @@ function CardProxyGrid(ctx) {
   const proxyList = expandCardList(ctx.state);
   const proxyPages = proxyList
     .reduce(partition(3), [])
+    .map(padPartitions(3, () => ({ isEmptyPlaceholder: true })))
     .reduce(partition(3), []);
 
   return proxyPages.map(
@@ -248,12 +261,10 @@ function CardProxyGrid(ctx) {
             <div class="tcg-card-row">
               ${row.map((entry) =>
                 !entry.card
-                  ? html`<div class="tcg-card">
-                      No card found for "${entry.identifier.name}"!
-                    </div>`
+                  ? CardProxyPlaceholder(entry)
                   : html`<div class="tcg-card">
                       <div
-                        class="${`tcg-proxy__card ${getCardBorderClassname(
+                        class="${`tcg-card-content ${getCardBorderClassname(
                           entry.card
                         )}`}"
                       >
@@ -297,7 +308,7 @@ function expandCardList(state) {
 }
 
 function getCardBorderClassname(card) {
-  return `tcg-proxy__card--border-${card.border_color}`;
+  return `tcg-card-content--border-${card.border_color}`;
 }
 
 function getFrontFaceImage(card) {
@@ -311,4 +322,46 @@ function getFrontFaceImage(card) {
   }
 
   return "";
+}
+
+function padPartitions(partitionSize, paddingForPartition) {
+  return function $padPartitions(partition) {
+    if (partition.length >= partitionSize) return partition;
+
+    while (partition.length < partitionSize) {
+      partition.push(paddingForPartition());
+    }
+
+    return partition;
+  };
+}
+
+function CardProxyPlaceholder(entry) {
+  if (entry.isEmptyPlaceholder) {
+    return html`<div class="tcg-card tcg-card--placeholder">
+      <div class="tcg-card-content">
+        <div class="tcg-card-placeholder-message">
+          <div class="tcg-card-placeholder-message-details">
+            This space left blank for<br />alignment purposes
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return html`<div class="tcg-card tcg-card--placeholder">
+    <div class="tcg-card-content">
+      <div class="tcg-card-placeholder-message">
+        <h4>Card not found!</h4>
+        <ul class="tcg-card-placeholder-message-details">
+          ${Object.entries(entry.identifier)
+            .filter(([key, value]) => key !== "count")
+            .map(
+              ([key, value]) =>
+                html`<li>${key}: ${value == null ? "(any)" : value}</li>`
+            )}
+        </ul>
+      </div>
+    </div>
+  </div>`;
 }
