@@ -64,9 +64,11 @@ searchRouter.get("/cards", async (ctx) => {
  *
  * 1. If either is nullish, returns the not-nullish one or else nullish.
  * 2. If either but not both are a token or double_faced_token, prefer the non-token.
- * 3. If either but not both are digital, prefer the non-digital.
- * 4. If they were released at different times, prefer the newer one.
- * 5. Failing that, return the next one.
+ *     - This covers edge cases like Llanowar Elves created by Llanowar Mentor.
+ * 3. If either but not both are non-English, prefer English.
+ * 4. If either but not both are digital, prefer the non-digital.
+ * 5. If they were released at different times, prefer the newer one.
+ * 6. Failing that, return the next one.
  *
  * @param {object} prev
  * @param {object} next
@@ -77,9 +79,6 @@ function keepPreferredCardRecord(prev, next) {
     return prev || next;
   }
 
-  // This has to be done because Scryfall also indexes tokens,
-  // which include things like the "Llanowar Elves" token created by
-  // the "Llanowar Mentor".
   const prevIsToken =
     prev.layout === "token" || prev.layout === "double_faced_token";
   const nextIsToken =
