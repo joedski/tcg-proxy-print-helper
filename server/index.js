@@ -18,10 +18,10 @@ const CARD_DB_PATH = path.resolve(
   __dirname,
   "..",
   "data",
-  "scryfall-default-cards-20210621090321.json"
+  "scryfall-default-cards-20230807210757.json"
 );
 
-console.log("loading Card DB...");
+console.log("loading Card DB from", CARD_DB_PATH);
 // Yeah this takes about 20 seconds, but to be fair it's 200+ MB.
 const cardDbText = fs.readFileSync(CARD_DB_PATH, "utf-8");
 const cardDb = JSON.parse(cardDbText);
