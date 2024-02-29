@@ -10,7 +10,8 @@ Currently only for MTG but there's no reason it couldn't be extended for other T
 
 1. Download [a card DB from Scryfall](https://scryfall.com/docs/api/bulk-data), and maybe consider chipping in a donation to support them.
    1. I recommend either "Unique Artwork" or "Default Cards".
-2. Save that to the `data/` folder.
-3. Update `CARD_DB_PATH` in `server/index.js`. Told you this thing is kinda crusty.
+2. Save the card DB to some folder.
+   1. I like to put it in a `data/` folder because it's data.
+3. Update `CARD_DB_PATH` in `server/index.js` to point to your card DB. Told you this thing is kinda crusty.
 4. `npm start`
 5. Access localhost on the specified port, which by default is `3030`, so `http://localhost:3030` should open up the app.
